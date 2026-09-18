@@ -7,7 +7,7 @@ import { PasswordProvider } from "@openauthjs/openauth/provider/password";
 import { PasswordUI } from "@openauthjs/openauth/ui/password";
 import { createSubjects } from "@openauthjs/openauth/subject";
 import { object, string } from "valibot";
-import { DashboardHTML } from "./dashboard";
+import { SettingsHTML } from "./settings";
 
 const subjects = createSubjects({
 	user: object({
@@ -19,10 +19,10 @@ export default {
 	fetch(request: Request, env: Env, ctx: ExecutionContext) {
 		const url = new URL(request.url);
 
-		if (url.pathname === "/dashboard") {
+		if (url.pathname === "/settings") {
 			const userId = url.searchParams.get("user_id") || "user_123";
 			const email = url.searchParams.get("email") || "user@example.com";
-			const html = DashboardHTML(userId, email);
+			const html = SettingsHTML(userId, email);
 			return new Response(html, {
 				headers: { "Content-Type": "text/html" },
 			});
@@ -35,7 +35,7 @@ export default {
 		}
 
 		if (url.pathname === "/") {
-			url.searchParams.set("redirect_uri", url.origin + "/dashboard");
+			url.searchParams.set("redirect_uri", url.origin + "/settings");
 			url.searchParams.set("client_id", "your-client-id");
 			url.searchParams.set("response_type", "code");
 			url.pathname = "/authorize";
@@ -80,7 +80,7 @@ export default {
 				const userId = await getOrCreateUser(env, value.email);
 				const baseUrl = "https://global.readtalk.workers.dev";
 				return Response.redirect(
-					`${baseUrl}/dashboard?user_id=${userId}&email=${encodeURIComponent(value.email)}`,
+					`${baseUrl}/settings?user_id=${userId}&email=${encodeURIComponent(value.email)}`,
 					302
 				);
 			},
