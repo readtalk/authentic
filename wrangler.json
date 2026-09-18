@@ -5,7 +5,7 @@
 	"upload_source_maps": true,
 	"kv_namespaces": [
 		{
-			"binding": "AUTH_STORAGE",
+			"binding": "AUTH_KV",
 			"id": "6ffcc61aed814e32b80e29c6fa5b44ee"
 		}
 	],
