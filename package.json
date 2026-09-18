@@ -1,8 +1,8 @@
 {
-	"name": "global",
-	"description": "Deploy an OpenAuth server on Cloudflare Workers.",
+	"name": "authentication",
+	"description": "Deploy an Authentication server on Cloudflare Workers.",
 	"cloudflare": {
-		"label": "OpenAuth Server",
+		"label": "Authentication Server",
 		"products": [
 			"Workers",
 			"D1",
