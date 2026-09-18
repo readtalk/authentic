@@ -1,4 +1,4 @@
-export function DashboardHTML(userId: string, email: string) {
+export function SettingsHTML(userId: string, email: string) {
   return `
     <!doctype html>
     <html lang="en">
