@@ -4,7 +4,7 @@ export function DashboardHTML(userId: string, email: string) {
     <html lang="en">
       <head>
         <meta charset="utf-8" />
-        <title>Dashboard - READTalk</title>
+        <title>READTalk Messenger</title>
         <style>
           body {
             font-family: system-ui, sans-serif;
@@ -34,17 +34,50 @@ export function DashboardHTML(userId: string, email: string) {
             margin-top: 20px;
           }
           .logout-btn:hover { background: #e60000; }
+          #loading { text-align: center; margin-top: 40px; }
         </style>
       </head>
       <body>
-        <div class="card">
-          <h1>Dashboard READTalk</h1>
-          <div class="info"><span class="label">User ID:</span> ${userId}</div>
-          <div class="info"><span class="label">Email:</span> ${email}</div>
-          <form action="/" method="post">
-            <button type="submit" class="logout-btn">Logout</button>
-          </form>
+        <div id="loading">Loading...</div>
+        <div id="dashboard" style="display:none;">
+          <div class="card">
+            <h4>Form @username?</h4>            
+            <div class="info"><span class="label">Key ID:</span> <span id="userId">${userId}</span></div>
+            <div class="info"><span class="label">Email:</span> <span id="email">${email}</span></div>
+            <button onclick="logout()" class="logout-btn">Logout</button>
+          </div>
         </div>
+        <script>
+          (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('user_id');
+            const email = urlParams.get('email');
+
+            if (userId && email) {
+              localStorage.setItem('user_id', userId);
+              localStorage.setItem('email', email);
+              const cleanUrl = window.location.origin + window.location.pathname;
+              window.history.replaceState({}, document.title, cleanUrl);
+            }
+
+            const savedUserId = localStorage.getItem('user_id');
+            const savedEmail = localStorage.getItem('email');
+            if (savedUserId && savedEmail) {
+              document.getElementById('userId').textContent = savedUserId;
+              document.getElementById('email').textContent = savedEmail;
+              document.getElementById('loading').style.display = 'none';
+              document.getElementById('dashboard').style.display = 'block';
+            } else {
+              document.getElementById('loading').textContent = 'No session found. Please login to https://global.readtalk.workers.dev';
+            }
+          })();
+
+          function logout() {
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('email');
+            window.location.href = '/';
+          }
+        </script>
       </body>
     </html>
   `;
