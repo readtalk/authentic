@@ -1,3 +1,4 @@
+//
 import { issuer } from "@openauthjs/openauth";
 import {
 	CloudflareStorage,
@@ -7,55 +8,46 @@ import { PasswordProvider } from "@openauthjs/openauth/provider/password";
 import { PasswordUI } from "@openauthjs/openauth/ui/password";
 import { createSubjects } from "@openauthjs/openauth/subject";
 import { object, string } from "valibot";
-import { Hono } from "hono";
-import { Settings } from "./settings";
+import { SettingsHTML } from "./settings";
 
 const subjects = createSubjects({
-	user: object({ id: string() }),
-});
-
-const app = new Hono();
-
-app.get("/settings", (c) => {
-	const userId = c.req.query("user_id") || "user_123";
-	const email = c.req.query("email") || "user@example.com";
-	return c.html(<Settings userId={userId} email={email} />);
-});
-
-app.get("/logout", (c) => {
-	const response = c.redirect("/");
-	response.headers.set("Set-Cookie", "session=; Max-Age=0; path=/");
-	return response;
-});
-
-app.get("/", (c) => {
-	const url = new URL(c.req.url);
-	url.searchParams.set("redirect_uri", url.origin + "/settings");
-	url.searchParams.set("client_id", "your-client-id");
-	url.searchParams.set("response_type", "code");
-	url.pathname = "/authorize";
-	return c.redirect(url.toString());
-});
-
-app.get("/callback", (c) => {
-	const url = new URL(c.req.url);
-	return c.json({
-		message: "OAuth flow complete!",
-		params: Object.fromEntries(url.searchParams.entries()),
-	});
+	user: object({
+		id: string(),
+	}),
 });
 
 export default {
 	fetch(request: Request, env: Env, ctx: ExecutionContext) {
 		const url = new URL(request.url);
 
-		if (
-			url.pathname === "/settings" ||
-			url.pathname === "/logout" ||
-			url.pathname === "/" ||
-			url.pathname === "/callback"
-		) {
-			return app.fetch(request, env, ctx);
+		if (url.pathname === "/settings") {
+			const userId = url.searchParams.get("user_id") || "user_123";
+			const email = url.searchParams.get("email") || "user@example.com";
+			const html = SettingsHTML(userId, email);
+			return new Response(html, {
+				headers: { "Content-Type": "text/html" },
+			});
+		}
+
+		if (url.pathname === "/logout") {
+			const response = Response.redirect("/");
+			response.headers.set("Set-Cookie", "session=; Max-Age=0; path=/");
+			return response;
+		}
+
+		if (url.pathname === "/") {
+			url.searchParams.set("redirect_uri", url.origin + "/settings");
+			url.searchParams.set("client_id", "your-client-id");
+			url.searchParams.set("response_type", "code");
+			url.pathname = "/authorize";
+			return Response.redirect(url.toString());
+		}
+
+		if (url.pathname === "/callback") {
+			return Response.json({
+				message: "OAuth flow complete!",
+				params: Object.fromEntries(url.searchParams.entries()),
+			});
 		}
 
 		return issuer({
@@ -99,13 +91,18 @@ export default {
 
 async function getOrCreateUser(env: Env, email: string): Promise<string> {
 	const result = await env.AUTH_DB.prepare(
-		`INSERT INTO user (email) VALUES (?)
-		 ON CONFLICT (email) DO UPDATE SET email = email
-		 RETURNING id;`
+		`
+		INSERT INTO user (email)
+		VALUES (?)
+		ON CONFLICT (email) DO UPDATE SET email = email
+		RETURNING id;
+		`,
 	)
 		.bind(email)
 		.first<{ id: string }>();
-	if (!result) throw new Error(`Unable to process user: ${email}`);
+	if (!result) {
+		throw new Error(`Unable to process user: ${email}`);
+	}
 	console.log(`Found or created user ${result.id} with email ${email}`);
 	return result.id;
 }
