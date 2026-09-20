@@ -68,12 +68,12 @@ export default {
 			},
 			theme: {
 				title: "READTalk Messenger",
-				primary: "#FF0000",
-				favicon: "https://raw.githubusercontent.com/readtalk/global/refs/heads/main/public/favicon.ico",
+				primary: "#000000",
+				favicon: "https://raw.githubusercontent.com/readtalk/authentication/refs/heads/main/public/favicon.ico",
 				logo: {
-					dark: "https://raw.githubusercontent.com/readtalk/global/refs/heads/main/public/brand.png",
+					dark: "https://raw.githubusercontent.com/readtalk/authentication/refs/heads/main/public/brand.png",
 					light:
-						"https://raw.githubusercontent.com/readtalk/global/refs/heads/main/public/brand.png",
+						"https://raw.githubusercontent.com/readtalk/authentication/refs/heads/main/public/brand.png",
 				},
 			},
 			success: async (ctx, value) => {
