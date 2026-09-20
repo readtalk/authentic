@@ -34,7 +34,7 @@ export default {
 
 		return issuer({
 			storage: CloudflareStorage({
-				namespace: env.AUTH_STORAGE as CloudflareStorageOptions["namespace"],
+				namespace: env.AUTH_KV as CloudflareStorageOptions["namespace"],
 			}),
 			subjects,
 			providers: {
