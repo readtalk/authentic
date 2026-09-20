@@ -1,3 +1,1 @@
-INSERT INTO user (email) VALUES (?)
-ON CONFLICT (email) DO UPDATE SET email = email
-RETURNING id;
+ALTER TABLE user ADD COLUMN username TEXT UNIQUE;
