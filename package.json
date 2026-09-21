@@ -1,5 +1,5 @@
 {
-	"name": "authentication",
+	"name": "authentic",
 	"description": "Deploy an Authentication server on Cloudflare Workers.",
 	"cloudflare": {
 		"label": "Authentication Server",
