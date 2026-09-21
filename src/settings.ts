@@ -34,7 +34,7 @@ export function SettingsHTML(userId: string, email: string) {
             cursor: pointer;
             margin-top: 20px;
           }
-          .logout-btn:hover { background: #e60000; }
+          .logout-btn:hover { background: #1a1a1a; }
           #loading { text-align: center; margin-top: 40px; }
         </style>
       </head>
