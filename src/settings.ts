@@ -21,7 +21,7 @@ export function SettingsHTML(userId: string, email: string) {
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
           }
-          h1 { margin-top: 0; color: #ff0000; }
+          h1 { margin-top: 0; color: #000000; }
           .info { margin: 16px 0; }
           .label { font-weight: 600; color: #667781; }
           .logout-btn {
