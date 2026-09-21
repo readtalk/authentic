@@ -25,7 +25,7 @@ export function SettingsHTML(userId: string, email: string) {
           .info { margin: 16px 0; }
           .label { font-weight: 600; color: #667781; }
           .logout-btn {
-            background: #ff0000;
+            background: #000000;
             color: white;
             border: none;
             padding: 10px 24px;
@@ -34,7 +34,7 @@ export function SettingsHTML(userId: string, email: string) {
             cursor: pointer;
             margin-top: 20px;
           }
-          .logout-btn:hover { background: #000000; }
+          .logout-btn:hover { background: #e60000; }
           #loading { text-align: center; margin-top: 40px; }
         </style>
       </head>
