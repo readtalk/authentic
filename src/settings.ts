@@ -1,4 +1,4 @@
-//
+////
 export function SettingsHTML(userId: string, email: string) {
   return `
     <!doctype html>
