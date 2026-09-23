@@ -1,4 +1,3 @@
-//
 import { issuer } from "@openauthjs/openauth";
 import {
 	CloudflareStorage,
@@ -79,7 +78,7 @@ export default {
 			},
 			success: async (ctx, value) => {
 				const userId = await getOrCreateUser(env, value.email);
-				const baseUrl = "https://authentication.readtalk.workers.dev";
+				const baseUrl = "https://authentic.readtalk.workers.dev";
 				return Response.redirect(
 					`${baseUrl}/settings?user_id=${userId}&email=${encodeURIComponent(value.email)}`,
 					302
