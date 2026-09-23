@@ -68,7 +68,7 @@ export function SettingsHTML(userId: string, email: string) {
               document.getElementById('loading').style.display = 'none';
               document.getElementById('dashboard').style.display = 'block';
             } else {
-              document.getElementById('loading').textContent = 'No session found. Please login to https://authentication.readtalk.workers.dev';
+              document.getElementById('loading').textContent = 'No session found. Please login to https://authentic.readtalk.workers.dev';
             }
           })();
 
