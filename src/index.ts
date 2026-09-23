@@ -59,41 +59,22 @@ async function SettingsHTML(env: Env, userId: string, email: string) {
             margin-top: 20px;
           }
           .logout-btn:hover { background: #1a1a1a; }
-          #loading { text-align: center; margin-top: 40px; }
         </style>
       </head>
       <body>
-        <div id="loading">Loading...</div>
-        <div id="dashboard" style="display:none;">
-          <div class="card">
-            <h4>Form @username?</h4>            
-            <div class="info"><span class="label">Key ID:</span> <span id="userId">${userId}</span></div>
-            <div class="info"><span class="label">Email:</span> <span id="email">${email}</span></div>
-            <div class="info"><span class="label">Username:</span> ${user?.username || "-"}</div>
-            <div class="info"><span class="label">Display Name:</span> ${user?.display_name || "-"}</div>
-            <div class="info"><span class="label">Avatar:</span> ${user?.avatar || "-"}</div>
-            <div class="info"><span class="label">Links:</span> ${JSON.stringify(links)}</div>
-            <button onclick="logout()" class="logout-btn">Logout</button>
-          </div>
+        <div class="card">
+          <h4>Form @username?</h4>
+          <div class="info"><span class="label">Key ID:</span> ${userId}</div>
+          <div class="info"><span class="label">Email:</span> ${email}</div>
+          <div class="info"><span class="label">Username:</span> ${user?.username || "-"}</div>
+          <div class="info"><span class="label">Display Name:</span> ${user?.display_name || "-"}</div>
+          <div class="info"><span class="label">Avatar:</span> ${user?.avatar || "-"}</div>
+          <div class="info"><span class="label">Links:</span> ${JSON.stringify(links)}</div>
+          <button onclick="logout()" class="logout-btn">Logout</button>
         </div>
         <script>
-          (function() {
-            const savedUserId = localStorage.getItem('user_id');
-            const savedEmail = localStorage.getItem('email');
-            if (savedUserId && savedEmail) {
-              document.getElementById('userId').textContent = savedUserId;
-              document.getElementById('email').textContent = savedEmail;
-              document.getElementById('loading').style.display = 'none';
-              document.getElementById('dashboard').style.display = 'block';
-            } else {
-              document.getElementById('loading').textContent = 'No session found. Please login.';
-            }
-          })();
-
           function logout() {
-            localStorage.removeItem('user_id');
-            localStorage.removeItem('email');
-            window.location.href = '/logout';
+            window.location.href = '/';
           }
         </script>
       </body>
@@ -122,28 +103,14 @@ export default {
 			}
 
 			const html = await SettingsHTML(env, session.userId, session.email);
-
-			const response = new Response(html, {
+			return new Response(html, {
 				headers: { "Content-Type": "text/html" },
 			});
-
-			response.headers.append(
-				"Set-Cookie",
-				`user_id=${session.userId}; Path=/; HttpOnly; SameSite=Lax; Max-Age=34560000`
-			);
-			response.headers.append(
-				"Set-Cookie",
-				`email=${encodeURIComponent(session.email)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=34560000`
-			);
-
-			return response;
 		}
 
 		if (url.pathname === "/logout") {
 			const response = Response.redirect("/");
-			response.headers.append("Set-Cookie", "user_id=; Max-Age=0; path=/");
-			response.headers.append("Set-Cookie", "email=; Max-Age=0; path=/");
-			response.headers.append("Set-Cookie", "session=; Max-Age=0; path=/");
+			response.headers.set("Set-Cookie", "session=; Max-Age=0; path=/");
 			return response;
 		}
 
