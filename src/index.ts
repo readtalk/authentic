@@ -31,29 +31,69 @@ async function SettingsHTML(env: Env, userId: string, email: string) {
         <meta charset="utf-8" />
         <title>READTalk Messenger</title>
         <style>
-          body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; background: #f0f2f5; color: #111b21; }
-          .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+          body {
+            font-family: system-ui, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background: #f0f2f5;
+            color: #111b21;
+          }
+          .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          }
           h1 { margin-top: 0; color: #000000; }
           .info { margin: 16px 0; }
           .label { font-weight: 600; color: #667781; }
-          .logout-btn { background: #000000; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-top: 20px; }
+          .logout-btn {
+            background: #000000;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 20px;
+          }
           .logout-btn:hover { background: #1a1a1a; }
+          #loading { text-align: center; margin-top: 40px; }
         </style>
       </head>
       <body>
-        <div class="card">
-          <h4>Form @username?</h4>
-          <div class="info"><span class="label">Key ID:</span> ${userId}</div>
-          <div class="info"><span class="label">Email:</span> ${email}</div>
-          <div class="info"><span class="label">Username:</span> ${user?.username || "-"}</div>
-          <div class="info"><span class="label">Display Name:</span> ${user?.display_name || "-"}</div>
-          <div class="info"><span class="label">Avatar:</span> ${user?.avatar || "-"}</div>
-          <div class="info"><span class="label">Links:</span> ${JSON.stringify(links)}</div>
-          <button onclick="logout()" class="logout-btn">Logout</button>
+        <div id="loading">Loading...</div>
+        <div id="dashboard" style="display:none;">
+          <div class="card">
+            <h4>Form @username?</h4>            
+            <div class="info"><span class="label">Key ID:</span> <span id="userId">${userId}</span></div>
+            <div class="info"><span class="label">Email:</span> <span id="email">${email}</span></div>
+            <div class="info"><span class="label">Username:</span> ${user?.username || "-"}</div>
+            <div class="info"><span class="label">Display Name:</span> ${user?.display_name || "-"}</div>
+            <div class="info"><span class="label">Avatar:</span> ${user?.avatar || "-"}</div>
+            <div class="info"><span class="label">Links:</span> ${JSON.stringify(links)}</div>
+            <button onclick="logout()" class="logout-btn">Logout</button>
+          </div>
         </div>
         <script>
+          (function() {
+            const savedUserId = localStorage.getItem('user_id');
+            const savedEmail = localStorage.getItem('email');
+            if (savedUserId && savedEmail) {
+              document.getElementById('userId').textContent = savedUserId;
+              document.getElementById('email').textContent = savedEmail;
+              document.getElementById('loading').style.display = 'none';
+              document.getElementById('dashboard').style.display = 'block';
+            } else {
+              document.getElementById('loading').textContent = 'No session found. Please login.';
+            }
+          })();
+
           function logout() {
-            window.location.href = '/';
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('email');
+            window.location.href = '/logout';
           }
         </script>
       </body>
@@ -82,14 +122,28 @@ export default {
 			}
 
 			const html = await SettingsHTML(env, session.userId, session.email);
-			return new Response(html, {
+
+			const response = new Response(html, {
 				headers: { "Content-Type": "text/html" },
 			});
+
+			response.headers.append(
+				"Set-Cookie",
+				`user_id=${session.userId}; Path=/; HttpOnly; SameSite=Lax; Max-Age=34560000`
+			);
+			response.headers.append(
+				"Set-Cookie",
+				`email=${encodeURIComponent(session.email)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=34560000`
+			);
+
+			return response;
 		}
 
 		if (url.pathname === "/logout") {
 			const response = Response.redirect("/");
-			response.headers.set("Set-Cookie", "session=; Max-Age=0; path=/");
+			response.headers.append("Set-Cookie", "user_id=; Max-Age=0; path=/");
+			response.headers.append("Set-Cookie", "email=; Max-Age=0; path=/");
+			response.headers.append("Set-Cookie", "session=; Max-Age=0; path=/");
 			return response;
 		}
 
