@@ -129,7 +129,9 @@ async function getOrCreateUser(env: Env, email: string): Promise<string> {
 		`INSERT INTO user (email) VALUES (?)
 		 ON CONFLICT (email) DO UPDATE SET email = email
 		 RETURNING id;`
-	).bind(email).first<{ id: string }>();
+	)
+		.bind(email)
+		.first<{ id: string }>();
 	if (!result) throw new Error(`Unable to process user: ${email}`);
 	console.log(`Found or created user ${result.id} with email ${email}`);
 	return result.id;
