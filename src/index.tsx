@@ -1,4 +1,4 @@
-/** @jsxImportSource hono/jsx */
+//** @jsxImportSource hono/jsx *//
 
 import { issuer } from "@openauthjs/openauth";
 import {
