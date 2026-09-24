@@ -40,16 +40,13 @@ export default {
 		}
 
 		if (url.pathname === "/") {
-			url.searchParams.set("redirect_uri", url.origin + "/callback");
+			url.searchParams.set("redirect_uri", url.origin + "/settings");
 			url.searchParams.set("client_id", "your-client-id");
 			url.searchParams.set("response_type", "code");
 			url.pathname = "/authorize";
 			return Response.redirect(url.toString());
 		} else if (url.pathname === "/callback") {
-			return Response.json({
-				message: "OAuth flow complete!",
-				params: Object.fromEntries(url.searchParams.entries()),
-			});
+			return Response.redirect(url.origin + "/settings");
 		}
 
 		return issuer({
