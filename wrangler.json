@@ -1,6 +1,6 @@
 {
 	"compatibility_date": "2025-10-08",
-	"main": "build/server/index.ts",
+	"main": "build/index.ts",
 	"name": "global",
 	"upload_source_maps": true,
 	"kv_namespaces": [
