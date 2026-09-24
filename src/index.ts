@@ -15,18 +15,37 @@ const subjects = createSubjects({
 	}),
 });
 
+function readSessionCookie(request: Request): string {
+	const cookie = request.headers.get("Cookie") ?? "";
+	for (const part of cookie.split(";")) {
+		const [k, ...v] = part.trim().split("=");
+		if (k === "rt_session") return v.join("=");
+	}
+	return "";
+}
+
 export default {
-	fetch(request: Request, env: Env, ctx: ExecutionContext) {
+	async fetch(request: Request, env: Env, ctx: ExecutionContext) {
 		const url = new URL(request.url);
 
 		if (url.pathname === "/settings") {
-			return new Response(renderSettings(), {
+			const code = readSessionCookie(request);
+			const value = code ? await env.GLOBAL_KV.get(code) : null;
+			return new Response(renderSettings(code, value), {
 				headers: { "content-type": "text/html" },
 			});
 		}
 
 		if (url.pathname === "/logout" && request.method === "POST") {
+			const code = readSessionCookie(request);
+			if (code) {
+				await env.GLOBAL_KV.delete(code);
+			}
 			const headers = new Headers();
+			headers.append(
+				"Set-Cookie",
+				"rt_session=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
+			);
 			headers.append(
 				"Set-Cookie",
 				"oa_access=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
@@ -40,13 +59,20 @@ export default {
 		}
 
 		if (url.pathname === "/") {
-			url.searchParams.set("redirect_uri", url.origin + "/settings");
+			url.searchParams.set("redirect_uri", url.origin + "/callback");
 			url.searchParams.set("client_id", "your-client-id");
 			url.searchParams.set("response_type", "code");
 			url.pathname = "/authorize";
 			return Response.redirect(url.toString());
 		} else if (url.pathname === "/callback") {
-			return Response.redirect(url.origin + "/settings");
+			const code = url.searchParams.get("code") ?? "";
+			const headers = new Headers();
+			headers.append(
+				"Set-Cookie",
+				`rt_session=${code}; Path=/; HttpOnly; Secure; SameSite=Lax`,
+			);
+			headers.set("Location", "/settings");
+			return new Response(null, { status: 302, headers });
 		}
 
 		return issuer({
