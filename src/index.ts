@@ -7,57 +7,25 @@ import { PasswordProvider } from "@openauthjs/openauth/provider/password";
 import { PasswordUI } from "@openauthjs/openauth/ui/password";
 import { createSubjects } from "@openauthjs/openauth/subject";
 import { object, string } from "valibot";
-import { renderSettings } from "./settings";
 
+// This value should be shared between the OpenAuth server Worker and other
+// client Workers that you connect to it, so the types and schema validation are
+// consistent.
 const subjects = createSubjects({
 	user: object({
 		id: string(),
 	}),
 });
 
-function readSessionCookie(request: Request): string {
-	const cookie = request.headers.get("Cookie") ?? "";
-	for (const part of cookie.split(";")) {
-		const [k, ...v] = part.trim().split("=");
-		if (k === "rt_session") return v.join("=");
-	}
-	return "";
-}
-
 export default {
-	async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+	fetch(request: Request, env: Env, ctx: ExecutionContext) {
+		// This top section is just for demo purposes. In a real setup another
+		// application would redirect the user to this Worker to be authenticated,
+		// and after signing in or registering the user would be redirected back to
+		// the application they came from. In our demo setup there is no other
+		// application, so this Worker needs to do the initial redirect and handle
+		// the callback redirect on completion.
 		const url = new URL(request.url);
-
-		if (url.pathname === "/settings") {
-			const code = readSessionCookie(request);
-			const value = code ? await env.GLOBAL_KV.get(code) : null;
-			return new Response(renderSettings(code, value), {
-				headers: { "content-type": "text/html" },
-			});
-		}
-
-		if (url.pathname === "/logout" && request.method === "POST") {
-			const code = readSessionCookie(request);
-			if (code) {
-				await env.GLOBAL_KV.delete(code);
-			}
-			const headers = new Headers();
-			headers.append(
-				"Set-Cookie",
-				"rt_session=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
-			);
-			headers.append(
-				"Set-Cookie",
-				"oa_access=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
-			);
-			headers.append(
-				"Set-Cookie",
-				"oa_refresh=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
-			);
-			headers.set("Location", "/");
-			return new Response(null, { status: 302, headers });
-		}
-
 		if (url.pathname === "/") {
 			url.searchParams.set("redirect_uri", url.origin + "/callback");
 			url.searchParams.set("client_id", "your-client-id");
@@ -65,16 +33,13 @@ export default {
 			url.pathname = "/authorize";
 			return Response.redirect(url.toString());
 		} else if (url.pathname === "/callback") {
-			const code = url.searchParams.get("code") ?? "";
-			const headers = new Headers();
-			headers.append(
-				"Set-Cookie",
-				`rt_session=${code}; Path=/; HttpOnly; Secure; SameSite=Lax`,
-			);
-			headers.set("Location", "/settings");
-			return new Response(null, { status: 302, headers });
+			return Response.json({
+				message: "OAuth flow complete!",
+				params: Object.fromEntries(url.searchParams.entries()),
+			});
 		}
 
+		// The real OpenAuth server code starts here:
 		return issuer({
 			storage: CloudflareStorage({
 				namespace: env.GLOBAL_KV as CloudflareStorageOptions["namespace"],
@@ -83,7 +48,11 @@ export default {
 			providers: {
 				password: PasswordProvider(
 					PasswordUI({
+						// eslint-disable-next-line @typescript-eslint/require-await
 						sendCode: async (email, code) => {
+							// This is where you would email the verification code to the
+							// user, e.g. using Resend:
+							// https://resend.com/docs/send-with-cloudflare-workers
 							console.log(`Sending code ${code} to ${email}`);
 						},
 						copy: {
