@@ -17,11 +17,17 @@ export function renderSettings(code: string, value: string | null) {
         </header>
         <main>
           <p>Encryption ${code}</p>
-          <pre><code>${value ?? "session not found in KV"}</code></pre>
-          <form method="POST" action="/logout">
+          <pre><code>${value ?? "session not found"}</code></pre>
+          <form id="logoutForm" method="POST" action="/logout">
             <button type="submit">Logout</button>
           </form>
         </main>
+        <script>
+          document.getElementById("logoutForm").addEventListener("submit", function () {
+            localStorage.clear();
+            sessionStorage.clear();
+          });
+        </script>
       </body>
     </html>
 `;
