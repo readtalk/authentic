@@ -1,4 +1,4 @@
-export function renderSettings() {
+export function renderSettings(code: string, value: string | null) {
 	return `
     <!DOCTYPE html>
     <html lang="en">
@@ -16,7 +16,8 @@ export function renderSettings() {
           <h1>READTalk Settings</h1>
         </header>
         <main>
-          <p>Kamu sudah login. Kelola akun kamu di sini.</p>
+          <p>Encryption ${code}</p>
+          <pre><code>${value ?? "session not found in KV"}</code></pre>
           <form method="POST" action="/logout">
             <button type="submit">Logout</button>
           </form>
