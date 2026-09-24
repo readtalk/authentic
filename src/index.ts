@@ -15,38 +15,25 @@ const subjects = createSubjects({
 	}),
 });
 
-function readSessionCookie(request: Request): string {
-	const cookie = request.headers.get("Cookie") ?? "";
-	for (const part of cookie.split(";")) {
-		const [k, ...v] = part.trim().split("=");
-		if (k === "rt_session") return v.join("=");
-	}
-	return "";
-}
-
 export default {
-	async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+	fetch(request: Request, env: Env, ctx: ExecutionContext) {
 		const url = new URL(request.url);
 
 		if (url.pathname === "/settings") {
-			const code = readSessionCookie(request);
-			const value = code
-				? await env.GLOBAL_KV.get("encryption:key" + code)
-				: null;
-			return new Response(renderSettings(code, value), {
+			return new Response(renderSettings(), {
 				headers: { "content-type": "text/html" },
 			});
 		}
 
 		if (url.pathname === "/logout" && request.method === "POST") {
-			const code = readSessionCookie(request);
-			if (code) {
-				await env.GLOBAL_KV.delete("encryption:key" + code);
-			}
 			const headers = new Headers();
 			headers.append(
 				"Set-Cookie",
-				"rt_session=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
+				"access_token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
+			);
+			headers.append(
+				"Set-Cookie",
+				"refresh_token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
 			);
 			headers.set("Location", "/");
 			return new Response(null, { status: 302, headers });
@@ -59,14 +46,7 @@ export default {
 			url.pathname = "/authorize";
 			return Response.redirect(url.toString());
 		} else if (url.pathname === "/callback") {
-			const code = url.searchParams.get("code") ?? "";
-			const headers = new Headers();
-			headers.append(
-				"Set-Cookie",
-				`rt_session=${code}; Path=/; HttpOnly; Secure; SameSite=Lax`,
-			);
-			headers.set("Location", "/settings");
-			return new Response(null, { status: 302, headers });
+			return Response.redirect(url.origin + "/settings");
 		}
 
 		return issuer({
