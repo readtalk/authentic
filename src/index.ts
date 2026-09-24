@@ -78,7 +78,7 @@ export default {
 			},
 			success: async (ctx, value) => {
 				const userId = await getOrCreateUser(env, value.email);
-				const baseUrl = "https://authentic.readtalk.workers.dev";
+				const baseUrl = "https://global.readtalk.workers.dev";
 				return Response.redirect(
 					`${baseUrl}/settings?user_id=${userId}&email=${encodeURIComponent(value.email)}`,
 					302
@@ -89,7 +89,7 @@ export default {
 } satisfies ExportedHandler<Env>;
 
 async function getOrCreateUser(env: Env, email: string): Promise<string> {
-	const result = await env.AUTH_DB.prepare(
+	const result = await env._DB.prepare(
 		`
 		INSERT INTO user (email)
 		VALUES (?)
