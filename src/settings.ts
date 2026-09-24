@@ -16,7 +16,7 @@ export function renderSettings() {
           <h1>READTalk Settings</h1>
         </header>
         <main>
-          <p>Kelola akun kamu di sini.</p>
+          <p>Kamu sudah login. Kelola akun kamu di sini.</p>
           <form method="POST" action="/logout">
             <button type="submit">Logout</button>
           </form>
